@@ -18,7 +18,7 @@ Ie: ${CONFIG_REPO}/infrastructures/${INFRASTRUCTURE_DIR}</description>
       <autoRebuild>false</autoRebuild>
     </com.sonyericsson.rebuild.RebuildSettings>
   </properties>
-  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.0.3">
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
@@ -37,6 +37,7 @@ Ie: ${CONFIG_REPO}/infrastructures/${INFRASTRUCTURE_DIR}</description>
       <hudson.plugins.git.extensions.impl.SubmoduleOption>
         <disableSubmodules>false</disableSubmodules>
         <recursiveSubmodules>true</recursiveSubmodules>
+        <trackingSubmodules>false</trackingSubmodules>
       </hudson.plugins.git.extensions.impl.SubmoduleOption>
     </extensions>
   </scm>
@@ -44,14 +45,14 @@ Ie: ${CONFIG_REPO}/infrastructures/${INFRASTRUCTURE_DIR}</description>
   <disabled>false</disabled>
   <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
   <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
-  <triggers class="vector"/>
+  <triggers/>
   <concurrentBuild>false</concurrentBuild>
   <builders>
     <hudson.tasks.Shell>
       <command>#!bash -e
 
 GITHUB_BASE_URL=&quot;${GIT_URL}/tree/${GIT_COMMIT}&quot;
-GITHUB_INF_URL=&quot;${GITHUB_BASE_URL}/infrastructures/${JOB_INFRASTRUCTURE_DIR}/cf&quot;
+GITHUB_INF_URL=&quot;${GITHUB_BASE_URL}/infrastructures/${JOB_INFRASTRUCTURE_DIR}/rmq&quot;
 
 echo &quot;***********************&quot;
 export DESC=&quot;desc JOB_INFRASTRUCTURE_DIR: &lt;a href=&apos;${GITHUB_INF_URL}&apos;&gt;$JOB_INFRASTRUCTURE_DIR&lt;/a&gt;&quot;
@@ -64,14 +65,14 @@ export GEM_HOME=/var/vcap/store/gems/$RUBY_VERSION/$JOB_NAME
 export GEM_PATH=$GEM_HOME
 export PATH=$PATH:$GEM_HOME/bin
 
-gem install bundler -v 1.3.5
+gem install bundler -v 1.6.2
 
 (
-cd C3CI
-bundle
-bundle exec rake cf:delete_deployment[\
+cd C3-Services
+bundle -j3
+bundle exec rake rmq:delete_deployment[\
 https://${BOSH_MICRO_IP}:25555,\
-`pwd`/../infrastructures/${JOB_INFRASTRUCTURE_DIR}/cf\
+`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
 ]
 )</command>
     </hudson.tasks.Shell>

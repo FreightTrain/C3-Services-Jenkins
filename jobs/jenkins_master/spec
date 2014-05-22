@@ -14,7 +14,6 @@ packages:
 - golang
 - gcf
 - spiff
-- ovftool
 - maven
 templates:
   bin/jenkins_master_ctl: bin/jenkins_master_ctl
@@ -25,6 +24,9 @@ templates:
   bin/install_dependencies_ctl: bin/install_dependencies_ctl
   bin/install_dependencies.sh.erb: bin/install_dependencies.sh
   data/properties.sh.erb: data/properties.sh
+  jenkins_jobs/delete-deployment.xml: jenkins_jobs/delete-deployment.xml
+  jenkins_jobs/deploy-rmq.xml: jenkins_jobs/deploy-rmq.xml
+  jenkins_jobs/test-rmq.xml: jenkins_jobs/test-rmq.xml
 
   helpers/ctl_setup.sh: helpers/ctl_setup.sh
   helpers/ctl_utils.sh: helpers/ctl_utils.sh
@@ -36,14 +38,6 @@ templates:
   config/netrc.erb: config/netrc
   config/jenkins_plugins.conf.erb: config/jenkins_plugins.conf
   config/hudson.plugins.s3.S3BucketPublisher.xml.erb: config/hudson.plugins.s3.S3BucketPublisher.xml
-
-  jenkins_jobs/deploy-cf.xml: jenkins_jobs/deploy-cf.xml
-  jenkins_jobs/test-cf.xml: jenkins_jobs/test-cf.xml
-  jenkins_jobs/stemcell-smoke-test.xml: jenkins_jobs/stemcell-smoke-test.xml
-  jenkins_jobs/delete-deployment.xml: jenkins_jobs/delete-deployment.xml
-  jenkins_jobs/deploy-custom-crud-apps.xml: jenkins_jobs/deploy-custom-crud-apps.xml
-  jenkins_jobs/build-stemcell.xml: jenkins_jobs/build-stemcell.xml
-  jenkins_jobs/deploy-disk-test-app.xml: jenkins_jobs/deploy-disk-test-app.xml
 
 properties:
   jenkins.admin.password:
