@@ -7,10 +7,11 @@
   <useSecurity>true</useSecurity>
   <authorizationStrategy class="hudson.security.AuthorizationStrategy$Unsecured"/>
   <securityRealm class="hudson.security.SecurityRealm$None"/>
+  <disableRememberMe>false</disableRememberMe>
   <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
   <workspaceDir>${JENKINS_HOME}/workspace/${ITEM_FULLNAME}</workspaceDir>
   <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
-  <systemMessage>C3_SERVICES_CI_V1.0.0</systemMessage>
+  <systemMessage>C3_SERVICES_CI_V1.0.1</systemMessage>
   <jdks/>
   <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
   <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
@@ -26,25 +27,30 @@
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
     </hudson.model.AllView>
-    <se.diabol.jenkins.pipeline.DeliveryPipelineView plugin="delivery-pipeline-plugin@0.6.10">
+    <se.diabol.jenkins.pipeline.DeliveryPipelineView plugin="delivery-pipeline-plugin@0.8.0">
       <owner class="hudson" reference="../../.."/>
-      <name>Pipeline</name>
+      <name>Deployment Pipelines</name>
       <filterExecutors>false</filterExecutors>
       <filterQueue>false</filterQueue>
       <properties class="hudson.model.View$PropertyList"/>
       <componentSpecs>
         <se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
-          <name>Cloud Foundry</name>
-          <firstJob>stemcell-smoke-test</firstJob>
+          <name>RabbitMQ Pipeline</name>
+          <firstJob>deploy-rmq</firstJob>
+        </se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
+        <se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
+          <name>CF Pipeline</name>
+          <firstJob>deploy-cf</firstJob>
         </se.diabol.jenkins.pipeline.DeliveryPipelineView_-ComponentSpec>
       </componentSpecs>
-      <noOfPipelines>1</noOfPipelines>
+      <noOfPipelines>2</noOfPipelines>
       <showAggregatedPipeline>false</showAggregatedPipeline>
       <noOfColumns>1</noOfColumns>
       <sorting>none</sorting>
       <showAvatars>true</showAvatars>
       <updateInterval>4</updateInterval>
       <showChanges>false</showChanges>
+      <allowManualTriggers>false</allowManualTriggers>
       <regexpFirstJobs/>
     </se.diabol.jenkins.pipeline.DeliveryPipelineView>
   </views>

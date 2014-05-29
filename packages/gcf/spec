@@ -1,6 +1,5 @@
 ---
 name: gcf
-dependencies:
-- golang
+dependencies: []
 files:
 - gcf/gcf-linux-amd64-12.2.14.tgz
