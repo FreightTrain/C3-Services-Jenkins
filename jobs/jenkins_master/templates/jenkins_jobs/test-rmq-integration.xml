@@ -1,20 +1,21 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Test the RMQ broker has come up and is available to service requests.</description>
+  <description>Integration test CF and the RMQ broker using Labrat.</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <hudson.model.StringParameterDefinition>
           <name>JOB_INFRASTRUCTURE_DIR</name>
-          <description>Name of the infrastructure directory</description>
+          <description>Name of the infrastructure directory from which your CF yaml fragments will be read.&lt;br&gt;
+Ie: ${CONFIG_REPO}/infrastructure/${INFRASTRUCTURE_DIR}</description>
           <defaultValue>${INFRASTRUCTURE_DIR}</defaultValue>
         </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.8.0">
-      <taskName>RMQ Broker Test</taskName>
+      <taskName>RMQ Integration Test</taskName>
       <stageName>Test</stageName>
     </se.diabol.jenkins.pipeline.PipelineProperty>
     <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.21">
@@ -54,42 +55,52 @@
     <hudson.tasks.Shell>
       <command>#!bash -e
 
-GITHUB_BASE_URL=&quot;${GIT_URL}/tree/${GIT_COMMIT}&quot;
-
-echo &quot;***********************&quot;
-echo &quot;${DESC}&quot; 
-echo &quot;***********************&quot;
-
 RUBY_VERSION=$(ruby -v | awk &apos;{print $2}&apos;)
 export GEM_HOME=/var/vcap/store/gems/$RUBY_VERSION/$JOB_NAME
 export GEM_PATH=$GEM_HOME
 export PATH=$PATH:$GEM_HOME/bin
 gem install bundler -v 1.6.2
 
+source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
+export CF_HOME=&apos;${PWD}&apos;
+
 (
-(
+echo -e &quot;\nRunning end-to-end service broker integration test...\n&quot;
 cd C3-Services
-bundle -j3
-bundle exec rake rmq:test_deployment[\
-`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
-]
-)
+
+APP_TEST_UUID=`date | md5sum | awk -F&quot; &quot; &apos;{print $1}&apos;`
+APP_TEST_UUID=&quot;labrat-${APP_TEST_UUID}&quot;
+APP_TEST_URL=&quot;`echo $NYET_TARGET | sed &quot;s|/api.|/\${APP_TEST_UUID}.|g&quot; `&quot;
+
+echo &quot;USING ${APP_TEST_UUID} for app, space and org and name&quot;
+echo &quot;USING ${APP_TEST_URL} to test application availability&quot;
+
+echo &quot;API Target: ${NYET_TARGET}&quot;
+cf api --skip-ssl-validation ${NYET_TARGET}
+cf auth ${NYET_ADMIN_USERNAME} ${NYET_ADMIN_PASSWORD} 
+
+cf create-org ${APP_TEST_UUID}
+cf create-space ${APP_TEST_UUID} -o ${APP_TEST_UUID}
+cf target -o ${APP_TEST_UUID} -s ${APP_TEST_UUID}
+
+cf create-service RabbitMQ &quot;Simple RabbitMQ Plan&quot; ${APP_TEST_UUID}
+
+rm -Rf labrat
+git clone --depth 1 https://github.com/FreightTrain/labrat.git
+cf push ${APP_TEST_UUID} -p ./labrat
+
+cf bind-service ${APP_TEST_UUID} ${APP_TEST_UUID}
+cf restart ${APP_TEST_UUID}
+
+# Make sure it works
+echo &quot;Curling...&quot;
+curl -k -f ${APP_TEST_URL}/services/rabbitmq
+
+echo &quot;Success! Cleaning up...&quot;
+cf delete-org -f ${APP_TEST_UUID}
 )</command>
     </hudson.tasks.Shell>
   </builders>
-  <publishers>
-    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.24">
-      <configs>
-        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
-          <configs>
-            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
-          </configs>
-          <projects>test-rmq-integration</projects>
-          <condition>UNSTABLE_OR_BETTER</condition>
-          <triggerWithNoParameters>false</triggerWithNoParameters>
-        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
-      </configs>
-    </hudson.plugins.parameterizedtrigger.BuildTrigger>
-  </publishers>
+  <publishers/>
   <buildWrappers/>
 </project>

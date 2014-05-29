@@ -27,6 +27,7 @@ templates:
   jenkins_jobs/test-rmq.xml: jenkins_jobs/test-rmq.xml
   jenkins_jobs/deploy-cf.xml: jenkins_jobs/deploy-cf.xml
   jenkins_jobs/test-cf.xml: jenkins_jobs/test-cf.xml
+  jenkins_jobs/test-rmq-integration.xml: jenkins_jobs/test-rmq-integration.xml
 
   helpers/ctl_setup.sh: helpers/ctl_setup.sh
   helpers/ctl_utils.sh: helpers/ctl_utils.sh
