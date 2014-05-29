@@ -100,7 +100,12 @@ https://${BOSH_MICRO_IP}:25555,\
 ${STEMCELL_URL},\
 `pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
 ]
-
+bundle exec rake rmq:register_service_broker[\
+`pwd`/../jobs/rmq/${RMQ_MANIFEST},\
+https://${BOSH_MICRO_IP}:25555,\
+${STEMCELL_URL},\
+`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
+]
 )</command>
     </hudson.tasks.Shell>
   </builders>
