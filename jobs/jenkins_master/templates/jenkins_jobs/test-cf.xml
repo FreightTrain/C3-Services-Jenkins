@@ -1,0 +1,95 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>JOB_INFRASTRUCTURE_DIR</name>
+          <description>Name of the infrastructure directory from which your &lt;a href=&quot;https://github.com/cloudfoundry/nyet#running-without-existing-organization&quot;&gt;NYET environment&lt;/a&gt; will be read.&lt;br&gt;
+Ie: ${CONFIG_REPO}/infrastructure/${INFRASTRUCTURE_DIR}/cf/nyet_ci.sh</description>
+          <defaultValue>${INFRASTRUCTURE_DIR}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.8.0">
+      <taskName>CF Test</taskName>
+      <stageName>Test</stageName>
+    </se.diabol.jenkins.pipeline.PipelineProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.21">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>${CONFIG_REPO}</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>${CONFIG_REPO_BRANCH}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.CleanCheckout/>
+      <hudson.plugins.git.extensions.impl.SubmoduleOption>
+        <disableSubmodules>false</disableSubmodules>
+        <recursiveSubmodules>true</recursiveSubmodules>
+        <trackingSubmodules>false</trackingSubmodules>
+      </hudson.plugins.git.extensions.impl.SubmoduleOption>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers/>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!bash -e
+
+GITHUB_BASE_URL=&quot;${GIT_URL}/tree/${GIT_COMMIT}&quot;
+GITHUB_NYET_ENV_URL=&quot;${GITHUB_BASE_URL}/infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh&quot;
+
+echo &quot;***********************&quot;
+echo &quot;NYET TARGET: &lt;a href=&apos;${GITHUB_NYET_ENV_URL}&apos;&gt;nyet_ci.sh&lt;/a&gt;&quot;
+echo &quot;***********************&quot;
+echo &quot;${DESC}&quot; 
+echo &quot;***********************&quot;
+
+RUBY_VERSION=$(ruby -v | awk &apos;{print $2}&apos;)
+export GEM_HOME=/var/vcap/store/gems/$RUBY_VERSION/$JOB_NAME
+export GEM_PATH=$GEM_HOME
+export PATH=$PATH:$GEM_HOME/bin
+gem install bundler -v 1.3.5
+
+(
+source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
+echo &quot;NYET Target: ${NYET_TARGET}&quot;
+cd C3-Services
+rm -Rf nyet
+git clone --depth 1 https://github.com/cloudfoundry/nyet.git
+cd  nyet
+bundle
+bundle exec rspec
+)</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher plugin="description-setter@1.8">
+      <regexp>desc CF_RELEASE: (.*) JOB_INFRASTRUCTURE_DIR: (.*) CF_MANIFEST: (.*) STEMCELL: (.*)</regexp>
+      <regexpForFailed>desc  CF_RELEASE: (.*) JOB_INFRASTRUCTURE_DIR: (.*) CF_MANIFEST: (.*) STEMCELL: (.*)</regexpForFailed>
+      <description>&lt;small&gt;&lt;ul&gt;&lt;li&gt;\4&lt;/li&gt;&lt;li&gt;\2&lt;/li&gt;&lt;li&gt;\1&lt;/li&gt;&lt;li&gt;\3&lt;/li&gt;&lt;/ul&gt;&lt;/small&gt;</description>
+      <descriptionForFailed>&lt;small&gt;&lt;ul&gt;&lt;li&gt;\4&lt;/li&gt;&lt;li&gt;\2&lt;/li&gt;&lt;li&gt;\1&lt;/li&gt;&lt;li&gt;\3&lt;/li&gt;&lt;/ul&gt;&lt;/small&gt;</descriptionForFailed>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+  </publishers>
+  <buildWrappers/>
+</project>
