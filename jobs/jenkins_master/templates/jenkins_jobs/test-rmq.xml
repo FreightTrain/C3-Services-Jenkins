@@ -82,6 +82,9 @@ bundle exec rake rmq:test_deployment[\
       <configs>
         <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
           <configs>
+            <hudson.plugins.git.GitRevisionBuildParameters plugin="git@2.2.1">
+              <combineQueuedCommits>false</combineQueuedCommits>
+            </hudson.plugins.git.GitRevisionBuildParameters>
             <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
           </configs>
           <projects>test-rmq-integration</projects>

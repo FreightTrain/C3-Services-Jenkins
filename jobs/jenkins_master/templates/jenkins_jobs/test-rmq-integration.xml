@@ -97,7 +97,7 @@ cf create-org ${APP_TEST_UUID}
 cf create-space ${APP_TEST_UUID} -o ${APP_TEST_UUID}
 cf target -o ${APP_TEST_UUID} -s ${APP_TEST_UUID}
 
-cf create-service RabbitMQ &quot;Simple RabbitMQ Plan&quot; ${APP_TEST_UUID}
+cf create-service rabbitmq default ${APP_TEST_UUID}
 
 rm -Rf labrat
 git clone --depth 1 https://github.com/FreightTrain/labrat.git
