@@ -10,6 +10,7 @@ export LANG=en_US.UTF-8
 export JENKINS_HOME=/var/vcap/store/jenkins_master
 java_binary=/var/vcap/packages/java/bin/java
 jenkins_war=/var/vcap/packages/jenkins/jenkins.war
+blobs_home=/var/vcap/store/blobs
 gems_home=/var/vcap/store/gems
 
 case $1 in
@@ -19,8 +20,10 @@ case $1 in
 
     echo $$ > $PIDFILE
 
+    mkdir -p $blobs_home
+    chown vcap:vcap $blobs_home 
     mkdir -p $gems_home
-    chown vcap:vcap $gems_home -R
+    chown vcap:vcap $gems_home
     mkdir -p $JENKINS_HOME
 
     cp $JOB_DIR/config/netrc /home/vcap/.netrc

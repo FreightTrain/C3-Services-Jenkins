@@ -89,6 +89,14 @@ export GEM_PATH=$GEM_HOME
 export PATH=$PATH:$GEM_HOME/bin
 gem install bundler -v 1.6.2
 
+
+(
+# use central blobstore
+cd C3-Services/rmq
+ln -s /var/vcap/store/blobs .blobs
+)
+
+
 (
 cd C3-Services
 bundle -j3
