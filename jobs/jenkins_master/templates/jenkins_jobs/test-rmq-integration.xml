@@ -12,6 +12,17 @@
 Ie: ${CONFIG_REPO}/infrastructure/${INFRASTRUCTURE_DIR}</description>
           <defaultValue>${INFRASTRUCTURE_DIR}</defaultValue>
         </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RMQ_MANIFEST</name>
+          <description>RMQ BOSH Manifest.&lt;br&gt;
+Ie: ${CONFIG_REPO}/jobs/rmq/${RMQ_MANIFEST}</description>
+          <defaultValue>rmq-core.yml</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>STEMCELL_URL</name>
+          <description>HTTP(S) url to any &lt;a href=&quot;http://bosh_artifacts.cfapps.io/file_collections?type=stemcells&quot;&gt;BOSH Stemcell&lt;/a&gt; accessible to Jenkins.</description>
+          <defaultValue>http://bosh-jenkins-artifacts.s3.amazonaws.com/bosh-stemcell/aws/bosh-stemcell-2427-aws-xen-ubuntu.tgz</defaultValue>
+        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.8.0">
@@ -64,13 +75,16 @@ gem install bundler -v 1.6.2
 source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
 export CF_HOME=&apos;${PWD}&apos;
 
-(
-echo -e &quot;\nRunning end-to-end service broker integration test...\n&quot;
-cd C3-Services
 
 APP_TEST_UUID=`date | md5sum | awk -F&quot; &quot; &apos;{print $1}&apos;`
 APP_TEST_UUID=&quot;labrat-${APP_TEST_UUID}&quot;
 APP_TEST_URL=&quot;`echo $NYET_TARGET | sed &quot;s|/api.|/\${APP_TEST_UUID}.|g&quot; `&quot;
+
+(
+echo -e &quot;\nRunning end-to-end service broker integration test...\n&quot;
+cd C3-Services
+bundle install -j3
+
 
 echo &quot;USING ${APP_TEST_UUID} for app, space and org and name&quot;
 echo &quot;USING ${APP_TEST_URL} to test application availability&quot;
@@ -91,9 +105,25 @@ cf push ${APP_TEST_UUID} -p ./labrat
 
 cf bind-service ${APP_TEST_UUID} ${APP_TEST_UUID}
 cf restart ${APP_TEST_UUID}
+)
+
+(
+cd C3-Services
+# Make sure it works
+echo &quot;Testing...&quot;
+curl -k -f ${APP_TEST_URL}/services/rabbitmq
+
+
+# Test recreate rmq vm 
+bundle exec rake rmq:recreate_rmq_server[\
+`pwd`/../jobs/rmq/${RMQ_MANIFEST},\
+https://${BOSH_MICRO_IP}:25555,\
+${STEMCELL_URL},\
+`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
+]
 
 # Make sure it works
-echo &quot;Curling...&quot;
+echo &quot;Testing after redeploy...&quot;
 curl -k -f ${APP_TEST_URL}/services/rabbitmq
 
 echo &quot;Success! Cleaning up...&quot;
