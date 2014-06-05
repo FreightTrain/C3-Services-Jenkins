@@ -1,0 +1,148 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description>Deploy Riak</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>RIAK_MANIFEST</name>
+          <description>RIAK BOSH Manifest.&lt;br&gt;
+Ie: ${CONFIG_REPO}/jobs/riak/${RIAK_MANIFEST}</description>
+          <defaultValue>riak-core.yml</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>JOB_INFRASTRUCTURE_DIR</name>
+          <description>Name of the infrastructure directory from which your Riak yaml fragments will be read.&lt;br&gt;
+Ie: ${CONFIG_REPO}/infrastructures/${INFRASTRUCTURE_DIR}</description>
+          <defaultValue>${INFRASTRUCTURE_DIR}</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>STEMCELL_URL</name>
+          <description>HTTP(S) url to any &lt;a href=&quot;http://bosh_artifacts.cfapps.io/file_collections?type=stemcells&quot;&gt;BOSH Stemcell&lt;/a&gt; accessible to Jenkins.</description>
+          <defaultValue>http://bosh-jenkins-artifacts.s3.amazonaws.com/bosh-stemcell/aws/bosh-stemcell-2427-aws-xen-ubuntu.tgz</defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.8.0">
+      <taskName>Riak Deploy</taskName>
+      <stageName>Deploy</stageName>
+    </se.diabol.jenkins.pipeline.PipelineProperty>
+    <com.sonyericsson.rebuild.RebuildSettings plugin="rebuild@1.21">
+      <autoRebuild>false</autoRebuild>
+    </com.sonyericsson.rebuild.RebuildSettings>
+  </properties>
+  <scm class="hudson.plugins.git.GitSCM" plugin="git@2.2.1">
+    <configVersion>2</configVersion>
+    <userRemoteConfigs>
+      <hudson.plugins.git.UserRemoteConfig>
+        <url>${CONFIG_REPO}</url>
+      </hudson.plugins.git.UserRemoteConfig>
+    </userRemoteConfigs>
+    <branches>
+      <hudson.plugins.git.BranchSpec>
+        <name>${CONFIG_REPO_BRANCH}</name>
+      </hudson.plugins.git.BranchSpec>
+    </branches>
+    <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+    <submoduleCfg class="list"/>
+    <extensions>
+      <hudson.plugins.git.extensions.impl.CleanCheckout/>
+      <hudson.plugins.git.extensions.impl.SubmoduleOption>
+        <disableSubmodules>false</disableSubmodules>
+        <recursiveSubmodules>true</recursiveSubmodules>
+        <trackingSubmodules>false</trackingSubmodules>
+      </hudson.plugins.git.extensions.impl.SubmoduleOption>
+    </extensions>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.SCMTrigger>
+      <spec>H/2 * * * *</spec>
+      <ignorePostCommitHooks>false</ignorePostCommitHooks>
+    </hudson.triggers.SCMTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>#!bash -e
+
+GITHUB_BASE_URL=&quot;${GIT_URL}/tree/${GIT_COMMIT}&quot;
+GITHUB_INF_DIR_URL=&quot;${GITHUB_BASE_URL}/infrastructures/${JOB_INFRASTRUCTURE_DIR}/riak&quot;
+GITHUB_MANIFEST_URL=&quot;${GITHUB_BASE_URL}/jobs/riak/${RIAK_MANIFEST}&quot;
+RIAK_RELEASE_VERSION=`echo ${RIAK_RELEASE} | awk -F &quot;/&quot; &apos;{print $NF}&apos;`
+STEMCELL_DESC=`echo ${STEMCELL_URL} | sed &apos;s/.*\///&apos; | sed &apos;s/.tgz//&apos;`
+
+echo &quot;***********************&quot;
+export DESC=&quot;desc JOB_INFRASTRUCTURE_DIR: &lt;a href=&apos;${GITHUB_INF_DIR_URL}&apos;&gt;${JOB_INFRASTRUCTURE_DIR}&lt;/a&gt; RIAK_MANIFEST: &lt;a href=&apos;${GITHUB_MANIFEST_URL}&apos;&gt;${RIAK_MANIFEST}&lt;/a&gt; STEMCELL: &lt;a href=&apos;${STEMCELL_URL}&apos;&gt;${STEMCELL_DESC}&lt;/a&gt;&quot;
+echo $DESC
+echo &quot;DESC=$DESC&quot; &gt; tmp.var 
+echo &quot;***********************&quot;
+
+RUBY_VERSION=$(ruby -v | awk &apos;{print $2}&apos;)
+export GEM_HOME=/var/vcap/store/gems/$RUBY_VERSION/$JOB_NAME
+export GEM_PATH=$GEM_HOME
+export PATH=$PATH:$GEM_HOME/bin
+gem install bundler -v 1.6.2
+
+
+(
+# use central blobstore
+cd C3-Services/riak
+ln -s /var/vcap/store/blobs .blobs
+)
+
+
+(
+cd C3-Services
+bundle -j3
+
+bundle exec rake riak:create_release
+bundle exec rake riak:upload_and_deploy_release[\
+`pwd`/../jobs/riak/${RIAK_MANIFEST},\
+https://${BOSH_MICRO_IP}:25555,\
+${STEMCELL_URL},\
+`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak\
+]
+bundle exec rake riak:register_service_broker[\
+`pwd`/../jobs/riak/${RIAK_MANIFEST},\
+https://${BOSH_MICRO_IP}:25555,\
+${STEMCELL_URL},\
+`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak\
+]
+)</command>
+    </hudson.tasks.Shell>
+  </builders>
+  <publishers>
+    <hudson.plugins.descriptionsetter.DescriptionSetterPublisher plugin="description-setter@1.8">
+      <regexp>desc JOB_INFRASTRUCTURE_DIR: (.*) RIAK_MANIFEST: (.*) STEMCELL: (.*)</regexp>
+      <regexpForFailed>desc  RMQ_RELEASE: (.*) JOB_INFRASTRUCTURE_DIR: (.*) RMQ_MANIFEST: (.*) STEMCELL: (.*)</regexpForFailed>
+      <description>&lt;small&gt;&lt;ul&gt;&lt;li&gt;\2&lt;/li&gt;&lt;li&gt;\1&lt;/li&gt;&lt;li&gt;\3&lt;/li&gt;&lt;/ul&gt;&lt;/small&gt;</description>
+      <descriptionForFailed>&lt;small&gt;&lt;ul&gt;&lt;li&gt;\4&lt;/li&gt;&lt;li&gt;\2&lt;/li&gt;&lt;li&gt;\1&lt;/li&gt;&lt;li&gt;\3&lt;/li&gt;&lt;/ul&gt;&lt;/small&gt;</descriptionForFailed>
+      <setForMatrix>false</setForMatrix>
+    </hudson.plugins.descriptionsetter.DescriptionSetterPublisher>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.24">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.FileBuildParameters>
+              <propertiesFile>tmp.var</propertiesFile>
+              <failTriggerOnMissing>false</failTriggerOnMissing>
+              <useMatrixChild>false</useMatrixChild>
+              <onlyExactRuns>false</onlyExactRuns>
+            </hudson.plugins.parameterizedtrigger.FileBuildParameters>
+            <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+          </configs>
+          <projects>test-riak</projects>
+          <condition>SUCCESS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
+  <buildWrappers/>
+</project>
