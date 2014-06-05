@@ -6,3 +6,5 @@ tar -xvf ${tarball}
 
 cp -a cf ${BOSH_INSTALL_TARGET}/
 chmod +x ${BOSH_INSTALL_TARGET}/cf
+
+ln -s ${BOSH_INSTALL_TARGET}/cf ${BOSH_INSTALL_TARGET}/gcf
