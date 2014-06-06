@@ -15,7 +15,7 @@ Ie: ${CONFIG_REPO}/infrastructure/${INFRASTRUCTURE_DIR}</description>
         <hudson.model.StringParameterDefinition>
           <name>RIAK_MANIFEST</name>
           <description>Riak BOSH Manifest.&lt;br&gt;
-Ie: ${CONFIG_REPO}/jobs/rmq/${RIAK_MANIFEST}</description>
+Ie: ${CONFIG_REPO}/jobs/riak/${RIAK_MANIFEST}</description>
           <defaultValue>riak-core.yml</defaultValue>
         </hudson.model.StringParameterDefinition>
         <hudson.model.StringParameterDefinition>
@@ -73,14 +73,13 @@ export PATH=$PATH:$GEM_HOME/bin
 gem install bundler -v 1.6.2
 
 source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
+export CF_HOME=&apos;${PWD}&apos;
+CF_DOMAIN=$( echo $NYET_TARGET | sed &apos;s|https://api.||&apos; )
 
-cf api --skip-ssl-validation ${NYET_TARGET}
-cf auth ${NYET_ADMIN_USERNAME} ${NYET_ADMIN_PASSWORD}
-cf create-org demo
-cf target -o demo
-cf create-space demo
-cf target -o demo -s demo
-cf marketplace | grep riak</command>
+cd C3-Services
+bundle install -j3
+
+rake riak:integration_test[`pwd`/../jobs/riak/${RIAK_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak,admin,admin,${CF_DOMAIN},${NYET_ADMIN_USERNAME},${NYET_ADMIN_PASSWORD}]</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>

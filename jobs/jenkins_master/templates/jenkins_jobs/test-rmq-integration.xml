@@ -74,61 +74,12 @@ gem install bundler -v 1.6.2
 
 source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
 export CF_HOME=&apos;${PWD}&apos;
+CF_DOMAIN=$( echo $NYET_TARGET | sed &apos;s|https://api.||&apos; )
 
-
-APP_TEST_UUID=`date | md5sum | awk -F&quot; &quot; &apos;{print $1}&apos;`
-APP_TEST_UUID=&quot;labrat-${APP_TEST_UUID}&quot;
-APP_TEST_URL=&quot;`echo $NYET_TARGET | sed &quot;s|/api.|/\${APP_TEST_UUID}.|g&quot; `&quot;
-
-(
-echo -e &quot;\nRunning end-to-end service broker integration test...\n&quot;
 cd C3-Services
 bundle install -j3
 
-
-echo &quot;USING ${APP_TEST_UUID} for app, space and org and name&quot;
-echo &quot;USING ${APP_TEST_URL} to test application availability&quot;
-
-echo &quot;API Target: ${NYET_TARGET}&quot;
-cf api --skip-ssl-validation ${NYET_TARGET}
-cf auth ${NYET_ADMIN_USERNAME} ${NYET_ADMIN_PASSWORD} 
-
-cf create-org ${APP_TEST_UUID}
-cf create-space ${APP_TEST_UUID} -o ${APP_TEST_UUID}
-cf target -o ${APP_TEST_UUID} -s ${APP_TEST_UUID}
-
-cf create-service rabbitmq default ${APP_TEST_UUID}
-
-rm -Rf labrat
-git clone --depth 1 https://github.com/FreightTrain/labrat.git
-cf push ${APP_TEST_UUID} -p ./labrat
-
-cf bind-service ${APP_TEST_UUID} ${APP_TEST_UUID}
-cf restart ${APP_TEST_UUID}
-)
-
-(
-cd C3-Services
-# Make sure it works
-echo &quot;Testing...&quot;
-curl -k -f ${APP_TEST_URL}/services/rabbitmq
-
-
-# Test recreate rmq vm 
-bundle exec rake rmq:recreate_rmq_server[\
-`pwd`/../jobs/rmq/${RMQ_MANIFEST},\
-https://${BOSH_MICRO_IP}:25555,\
-${STEMCELL_URL},\
-`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq\
-]
-
-# Make sure it works
-echo &quot;Testing after redeploy...&quot;
-curl -k -f ${APP_TEST_URL}/services/rabbitmq
-
-echo &quot;Success! Cleaning up...&quot;
-cf delete-org -f ${APP_TEST_UUID}
-)</command>
+rake rmq:integration_test[`pwd`/../jobs/rmq/${RMQ_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/rmq,admin,admin,${CF_DOMAIN},${NYET_ADMIN_USERNAME},${NYET_ADMIN_PASSWORD}]</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers/>
