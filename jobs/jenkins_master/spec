@@ -28,6 +28,9 @@ templates:
   jenkins_jobs/deploy-cf.xml: jenkins_jobs/deploy-cf.xml
   jenkins_jobs/test-cf.xml: jenkins_jobs/test-cf.xml
   jenkins_jobs/test-rmq-integration.xml: jenkins_jobs/test-rmq-integration.xml
+  jenkins_jobs/deploy-riak.xml: jenkins_jobs/deploy-riak.xml
+  jenkins_jobs/test-riak-integration.xml: jenkins_jobs/test-riak-integration.xml
+  jenkins_jobs/test-riak.xml: jenkins_jobs/test-riak.xml
 
   helpers/ctl_setup.sh: helpers/ctl_setup.sh
   helpers/ctl_utils.sh: helpers/ctl_utils.sh
