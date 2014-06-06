@@ -73,7 +73,7 @@ export PATH=$PATH:$GEM_HOME/bin
 gem install bundler -v 1.6.2
 
 source infrastructure/${JOB_INFRASTRUCTURE_DIR}/cf/nyet_ci.sh
-export CF_HOME=&apos;${PWD}&apos;
+export CF_HOME=&quot;${PWD}&quot;
 CF_DOMAIN=$( echo $NYET_TARGET | sed &apos;s|https://api.||&apos; )
 
 cd C3-Services
