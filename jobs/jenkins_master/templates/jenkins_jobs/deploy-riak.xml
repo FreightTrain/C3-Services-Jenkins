@@ -136,6 +136,9 @@ ${STEMCELL_URL},\
               <onlyExactRuns>false</onlyExactRuns>
             </hudson.plugins.parameterizedtrigger.FileBuildParameters>
             <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
+            <hudson.plugins.git.GitRevisionBuildParameters plugin="git@2.2.1">
+              <combineQueuedCommits>false</combineQueuedCommits>
+            </hudson.plugins.git.GitRevisionBuildParameters>
           </configs>
           <projects>test-riak</projects>
           <condition>SUCCESS</condition>
