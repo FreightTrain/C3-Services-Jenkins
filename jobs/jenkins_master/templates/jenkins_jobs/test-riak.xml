@@ -11,17 +11,6 @@
           <description>Name of the infrastructure directory</description>
           <defaultValue>${INFRASTRUCTURE_DIR}</defaultValue>
         </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>RIAK_MANIFEST</name>
-          <description>RIAK BOSH Manifest.&lt;br&gt;
-Ie: ${CONFIG_REPO}/jobs/riak/${RIAK_MANIFEST}</description>
-          <defaultValue>riak-core.yml</defaultValue>
-        </hudson.model.StringParameterDefinition>
-        <hudson.model.StringParameterDefinition>
-          <name>STEMCELL_URL</name>
-          <description>HTTP(S) url to any &lt;a href=&quot;http://bosh_artifacts.cfapps.io/file_collections?type=stemcells&quot;&gt;BOSH Stemcell&lt;/a&gt; accessible to Jenkins.</description>
-          <defaultValue>http://bosh-jenkins-artifacts.s3.amazonaws.com/bosh-stemcell/aws/bosh-stemcell-2427-aws-xen-ubuntu.tgz</defaultValue>
-        </hudson.model.StringParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
     <se.diabol.jenkins.pipeline.PipelineProperty plugin="delivery-pipeline-plugin@0.8.0">
@@ -77,23 +66,14 @@ export GEM_PATH=$GEM_HOME
 export PATH=$PATH:$GEM_HOME/bin
 gem install bundler -v 1.6.2
 
-
 (
-# use central blobstore
-cd C3-Services/riak
-ln -s /var/vcap/store/blobs .blobs
-)
-
 (
 cd C3-Services
 bundle -j3
-bundle exec rake riak:create_release
 bundle exec rake riak:test_deployment[\
-`pwd`/../jobs/riak/${RIAK_MANIFEST},\
-https://${BOSH_MICRO_IP}:25555,\
-${STEMCELL_URL},\
 `pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak\
 ]
+)
 )</command>
     </hudson.tasks.Shell>
   </builders>
