@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Test the Riak broker has come up and is available to service requests.</description>
+  <description></description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.model.ParametersDefinitionProperty>
@@ -70,9 +70,7 @@ gem install bundler -v 1.6.2
 (
 cd C3-Services
 bundle -j3
-bundle exec rake riak:test_deployment[\
-`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak\
-]
+rake riak:test_deployment[`pwd`/../jobs/riak/${RIAK_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak,admin,admin]
 )
 )</command>
     </hudson.tasks.Shell>
