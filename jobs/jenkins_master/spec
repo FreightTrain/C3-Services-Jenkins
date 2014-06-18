@@ -22,15 +22,17 @@ templates:
   bin/install_dependencies_ctl: bin/install_dependencies_ctl
   bin/install_dependencies.sh.erb: bin/install_dependencies.sh
   data/properties.sh.erb: data/properties.sh
+  jenkins_jobs/delete-all.xml: jenkins_jobs/delete-all.xml
   jenkins_jobs/delete-deployment.xml: jenkins_jobs/delete-deployment.xml
-  jenkins_jobs/deploy-rmq.xml: jenkins_jobs/deploy-rmq.xml
-  jenkins_jobs/test-rmq.xml: jenkins_jobs/test-rmq.xml
+  jenkins_jobs/deploy-all.xml: jenkins_jobs/deploy-all.xml
   jenkins_jobs/deploy-cf.xml: jenkins_jobs/deploy-cf.xml
-  jenkins_jobs/test-cf.xml: jenkins_jobs/test-cf.xml
-  jenkins_jobs/test-rmq-integration.xml: jenkins_jobs/test-rmq-integration.xml
   jenkins_jobs/deploy-riak.xml: jenkins_jobs/deploy-riak.xml
+  jenkins_jobs/deploy-rmq.xml: jenkins_jobs/deploy-rmq.xml
+  jenkins_jobs/test-cf.xml: jenkins_jobs/test-cf.xml
   jenkins_jobs/test-riak-integration.xml: jenkins_jobs/test-riak-integration.xml
   jenkins_jobs/test-riak.xml: jenkins_jobs/test-riak.xml
+  jenkins_jobs/test-rmq-integration.xml: jenkins_jobs/test-rmq-integration.xml
+  jenkins_jobs/test-rmq.xml: jenkins_jobs/test-rmq.xml
 
   helpers/ctl_setup.sh: helpers/ctl_setup.sh
   helpers/ctl_utils.sh: helpers/ctl_utils.sh
