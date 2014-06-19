@@ -129,12 +129,6 @@ ${STEMCELL_URL},\
       <configs>
         <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
           <configs>
-            <hudson.plugins.parameterizedtrigger.FileBuildParameters>
-              <propertiesFile>tmp.var</propertiesFile>
-              <failTriggerOnMissing>false</failTriggerOnMissing>
-              <useMatrixChild>false</useMatrixChild>
-              <onlyExactRuns>false</onlyExactRuns>
-            </hudson.plugins.parameterizedtrigger.FileBuildParameters>
             <hudson.plugins.parameterizedtrigger.CurrentBuildParameters/>
           </configs>
           <projects>test-riak</projects>

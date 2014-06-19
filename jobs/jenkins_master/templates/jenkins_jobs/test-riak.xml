@@ -70,9 +70,11 @@ gem install bundler -v 1.6.2
 (
 cd C3-Services
 bundle -j3
-rake riak:test_deployment[`pwd`/../jobs/riak/${RIAK_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak,admin,admin]
+bundle exec rake riak:create_release
+rake riak:test_deployment[`pwd`/../jobs/riak/${RIAK_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak]
+rake riak:test_deployment_4servers[`pwd`/../jobs/riak/${RIAK_MANIFEST},https://${BOSH_MICRO_IP}:25555,${STEMCELL_URL},`pwd`/../infrastructure/${JOB_INFRASTRUCTURE_DIR}/riak,`pwd`/../jobs/riak/4_server_toggle.yml]
 )
-)</command>
+</command>
     </hudson.tasks.Shell>
   </builders>
   <publishers>
